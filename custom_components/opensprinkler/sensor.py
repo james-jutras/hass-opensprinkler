@@ -35,17 +35,32 @@ def _create_entities(hass: HomeAssistant, entry: dict):
     controller = hass.data[DOMAIN][entry.entry_id]["controller"]
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     name = entry.data[CONF_NAME]
+    
+    # <JRJ> Test logging
+    #_LOGGER.debug("Sensor::_create_entities: Debug -> Test Logging Name: %s", name)  # No output in HA log file
+    #_LOGGER.info("Sensor::_create_entities:  Info  -> Test Logging Name: %s", name)  # No output in HA log file
+    #_LOGGER.warning("Sensor::_create_entities: Warn -> Test Logging Name: %s", name) # Shows in HA log file
+    #_LOGGER.error("Sensor::_create_entities: Error -> Test Logging Name: %s", name)  # Shows in HA log file
+    #_LOGGER.critical("Sensor::_create_entities: Critical -> Test Logging Name: %s", name)  # Shows in HA log file
 
     entities.append(LastRunSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: LastRunSensor Completed")
     entities.append(RainDelayStopTimeSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: RainDelayStopTimeSensor Completed")
     entities.append(WaterLevelSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: WaterLevelSensor Completed")
     entities.append(FlowRateSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: FlowRateSensor Completed")
     entities.append(CurrentDrawSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: CurrentDrawSensor Completed")
     entities.append(ControllerCurrentTimeSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: ControllerCurrentTimeSensor Completed")
     entities.append(PauseEndTimeSensor(entry, name, controller, coordinator))
+    #_LOGGER.warning("Sensor::_create_entities: PauseEndTimeSensor Completed")
 
     for _, station in controller.stations.items():
         entities.append(StationStatusSensor(entry, name, station, coordinator))
+        #_LOGGER.warning("Sensor::_create_entities: StationStatusSensor Completed Station: %s", station.name)
 
     return entities
 
@@ -73,6 +88,7 @@ class WaterLevelSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entit
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::WaterLevelSensor: Slugify %s", self._entry.unique_id)
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_water_level")
 
     @property
@@ -101,7 +117,12 @@ class WaterLevelSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entit
             if not timestamp:
                 attributes[attr] = None
             else:
-                attributes[attr] = utc_from_timestamp(timestamp).isoformat()
+                ##attributes[attr] = utc_from_timestamp(timestamp).isoformat()
+                # OpenSprinkler on UBUNTU Server (64bit) returns a 64bit unsigned long instead of the expected 32bit unsigned int
+                if (timestamp <= 0xFFFFFFFF):
+                  attributes[attr] = utc_from_timestamp(timestamp).isoformat()
+                else:
+                  attributes[attr] = utc_from_timestamp(timestamp & 0xFFFFFFFF).isoformat()
 
         return attributes
 
@@ -133,6 +154,7 @@ class FlowRateSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entity)
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::FlowRateSensor: Slugify %s", self._entry.unique_id)
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_flow_rate")
 
     @property
@@ -150,6 +172,8 @@ class LastRunSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entity):
 
     def __init__(self, entry, name, controller, coordinator):
         """Set up a new opensprinkler last run sensor."""
+        # <JRJ> Code fix
+        self._name = name        
         self._controller = controller
         self._entity_type = "sensor"
         super().__init__(entry, name, coordinator)
@@ -172,6 +196,7 @@ class LastRunSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entity):
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::LastRunSensor: Slugify %s", self._entry.unique_id)        
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_last_run")
 
     @property
@@ -197,7 +222,12 @@ class LastRunSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entity):
         if last_run == 0:
             return None
 
-        return utc_from_timestamp(last_run).isoformat()
+        ##return utc_from_timestamp(last_run).isoformat()
+        # OpenSprinkler on UBUNTU Server (64bit) returns a 64bit unsigned long instead of the expected 32bit unsigned int
+        try:
+          return utc_from_timestamp(last_run).isoformat()
+        except:
+          return utc_from_timestamp(last_run & 0xFFFFFFFF).isoformat()
 
 
 class RainDelayStopTimeSensor(
@@ -230,6 +260,7 @@ class RainDelayStopTimeSensor(
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::RainDelayStopTimeSensor: Slugify %s", self._entry.unique_id)          
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_rdst")
 
     def _get_state(self):
@@ -238,7 +269,12 @@ class RainDelayStopTimeSensor(
         if rdst == 0:
             return None
 
-        return utc_from_timestamp(rdst).isoformat()
+        ##return utc_from_timestamp(rdst).isoformat()
+        # OpenSprinkler on UBUNTU Server (64bit) returns a 64bit unsigned long instead of the expected 32bit unsigned int
+        try:
+          return utc_from_timestamp(rdst).isoformat()
+        except:
+          return utc_from_timestamp(rdst & 0xFFFFFFFF).isoformat()
 
 
 class PauseEndTimeSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entity):
@@ -267,6 +303,7 @@ class PauseEndTimeSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Ent
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::PauseEndTimeSensor: Slugify %s", self._entry.unique_id)          
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_pt")
 
     def _get_state(self):
@@ -279,7 +316,13 @@ class PauseEndTimeSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Ent
 
         # Since the controller provides the remaining time as a duration, add it to the
         # current device time to determine when the pause will end.
-        return utc_from_timestamp(self._controller.device_time + pt).isoformat()
+
+        ##return utc_from_timestamp(self._controller.device_time + pt).isoformat()
+        # OpenSprinkler on UBUNTU Server (64bit) returns a 64bit unsigned long instead of the expected 32bit unsigned int
+        if (self._controller.device_time <= 0xFFFFFFFF):
+          return utc_from_timestamp(self._controller.device_time + pt).isoformat()
+        else:
+          return utc_from_timestamp((self._controller.device_time & 0xFFFFFFFF) + pt).isoformat()
 
 
 class StationStatusSensor(OpenSprinklerStationEntity, OpenSprinklerSensor, Entity):
@@ -287,18 +330,35 @@ class StationStatusSensor(OpenSprinklerStationEntity, OpenSprinklerSensor, Entit
 
     def __init__(self, entry, name, station, coordinator):
         """Set up a new OpenSprinkler station sensor."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the sensor name below
+        self._name = name
         self._station = station
         self._entity_type = "sensor"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this sensor."""
+    #    return self._station.name + " Station Status"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-S00-NorthSideCedars Station Status ==> OpenSprinkler FrontYard S00 Station Status
     @property
     def name(self) -> str:
-        """Return the name of this sensor."""
-        return self._station.name + " Station Status"
+        """Return the name of the sensor."""
+        result = self._name + " S" + str(f'{self._station.index:02}') + " Station Status"
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml
+        #_LOGGER.warning("Sensor: New Name: %s", result)
+        return result
 
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.debug("Sensor: Unique Identifier: %s", slugify(f"{self._entry.unique_id}_{self._entity_type}_station_status_{self._station.index}"))
+        #_LOGGER.warning("Sensor::StationStatusSensor: Slugify %s", (f"{self._entry.unique_id}_{self._entity_type}_station_status_{self._station.index}"))
+        #_LOGGER.warning("Sensor::StationStatusSensor: Slugified %s", slugify(f"{self._entry.unique_id}_{self._entity_type}_station_status_{self._station.index}"))          
         return slugify(
             f"{self._entry.unique_id}_{self._entity_type}_station_status_{self._station.index}"
         )
@@ -345,6 +405,7 @@ class CurrentDrawSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Enti
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::CurrentDrawSensor: Slugify %s", self._entry.unique_id)           
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_current_draw")
 
     @property
@@ -364,6 +425,8 @@ class ControllerCurrentTimeSensor(
 
     def __init__(self, entry, name, controller, coordinator):
         """Set up a new opensprinkler controller current time sensor."""
+        # <JRJ> Code fix
+        self._name = name
         self._controller = controller
         self._entity_type = "sensor"
         super().__init__(entry, name, coordinator)
@@ -386,6 +449,7 @@ class ControllerCurrentTimeSensor(
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
+        #_LOGGER.warning("Sensor::ControllerCurrentTimeSensor: Slugify %s", self._entry.unique_id)           
         return slugify(f"{self._entry.unique_id}_{self._entity_type}_devt")
 
     @property
@@ -399,4 +463,9 @@ class ControllerCurrentTimeSensor(
         if devt == 0:
             return None
 
-        return utc_from_timestamp(devt).isoformat()
+        ##return utc_from_timestamp(devt).isoformat()
+        # OpenSprinkler on UBUNTU Server (64bit) returns a 64bit unsigned long instead of the expected 32bit unsigned int
+        if (self._controller.device_time <= 0xFFFFFFFF):
+          return utc_from_timestamp(devt).isoformat()
+        else:
+          return utc_from_timestamp(devt & 0xFFFFFFFF).isoformat()

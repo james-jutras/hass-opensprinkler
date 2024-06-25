@@ -59,15 +59,29 @@ class ProgramRestrictionsSelect(
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program select for restrictions."""
+        # <JRJ> Grab the controller ID  e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the select name below
+        self._name = name        
         self._program = program
         self._entity_type = "select"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this select."""
+    #    return f"{self._program.name} Restrictions"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Restrictions==> OpenSprinkler FrontYard P00 Restrictions    
     @property
     def name(self) -> str:
         """Return the name of this select."""
-        return f"{self._program.name} Restrictions"
-
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Restrictions"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Select: New Name: %s", result)
+        return result
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -114,15 +128,29 @@ class ProgramTypeSelect(OpenSprinklerProgramEntity, OpenSprinklerSelect, SelectE
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program select for program type."""
+        # <JRJ> Grab the controller ID to be used to generate the select name below
+        self._name = name        
         self._program = program
         self._entity_type = "select"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this select."""
+    #    return f"{self._program.name} Type"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Type==> OpenSprinkler FrontYard P00 Type    
     @property
     def name(self) -> str:
         """Return the name of this select."""
-        return f"{self._program.name} Type"
-
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Type"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Select: New Name: %s", result)
+        return result
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -167,15 +195,29 @@ class ProgramAdditionalStartTimeTypeSelect(
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program select for start time type."""
+        # <JRJ> Grab the controller ID to be used to generate the select name below
+        self._name = name        
         self._program = program
         self._entity_type = "select"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this select."""
+    #    return f"{self._program.name} Additional Start Time Type"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Additional Start Time Type==> OpenSprinkler FrontYard P00 Additional Start Time Type    
     @property
     def name(self) -> str:
         """Return the name of this select."""
-        return f"{self._program.name} Additional Start Time Type"
-
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Additional Start Time Type"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Select: New Name: %s", result)
+        return result
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -220,16 +262,32 @@ class ProgramStartTimeOffsetTypeSelect(
 
     def __init__(self, entry, name, program, start_index, coordinator):
         """Set up a new OpenSprinkler program select for start time offset type."""
+        # <JRJ> Grab the controller ID to be used to generate the select name below
+        self._name = name         
         self._program = program
         self._start_index = start_index
         self._entity_type = "select"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this select."""
+    #    start = str(self._start_index) if self._start_index > 0 else ""
+    #    return f"{self._program.name} Start{start} Time Offset Type"
+    
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Start00 Time Offset Type==> OpenSprinkler FrontYard P00 Start00 Time Offset Type  
     @property
     def name(self) -> str:
         """Return the name of this select."""
         start = str(self._start_index) if self._start_index > 0 else ""
-        return f"{self._program.name} Start{start} Time Offset Type"
+        result = self._name + " P" + str(f'{self._program.index:02} Start{start}') + " Time Offset Type"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Select: New Name: %s", result)
+        return result 
+        
 
     @property
     def unique_id(self) -> str:

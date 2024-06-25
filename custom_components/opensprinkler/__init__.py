@@ -71,7 +71,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         async def async_update_data():
             """Fetch data from OpenSprinkler."""
-            _LOGGER.debug("refreshing data")
+            #Add=> custom_components.opensprinkler: debug to configuration.yaml
+            #Add=> custom_components.pyopensprinkler: debug to configuration.yaml
+            # _LOGGER.debug("refreshing data")
             async with async_timeout.timeout(TIMEOUT):
                 try:
                     await controller.refresh()
@@ -214,6 +216,7 @@ class OpenSprinklerEntity(RestoreEntity):
 
     def __init__(self, entry, name, coordinator):
         """Initialize."""
+        #_LOGGER.debug("__init__: vinteo hass-opensprinkler V1.3.0.2 2024/03/02 (64bit time_t Fix) [Name: %s]", name)
         self._coordinator = coordinator
         self._entry = entry
         self._name = name
@@ -234,6 +237,11 @@ class OpenSprinklerEntity(RestoreEntity):
 
         firmware = controller.firmware_version_name or "Unknown"
         firmware += f" ({ controller.firmware_minor_version })"
+        
+        # Modified
+        firmware += " hass-opensprinkler: V1.3.4.1 2024/06/25"
+        
+        #_LOGGER.debug("device_info: firmware: %s", firmware)
 
         return {
             "identifiers": {(DOMAIN, slugify(self._entry.unique_id))},

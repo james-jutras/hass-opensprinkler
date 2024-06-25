@@ -140,14 +140,28 @@ class ProgramEnabledSwitch(
 ):
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program switch."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the switch name below
+        self._name = name        
         self._program = program
         self._entity_type = "switch"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self):
+    #    """Return the name of the switch."""
+    #    return self._program.name + " Program Enabled"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Program Enabled ==> OpenSprinkler FrontYard P00 Program Enabled
     @property
     def name(self):
         """Return the name of the switch."""
-        return self._program.name + " Program Enabled"
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Program Enabled"
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Switch: New Name: %s", result)
+        return result         
 
     @property
     def unique_id(self) -> str:
@@ -189,15 +203,31 @@ class ProgramWeekdaySwitch(
 ):
     def __init__(self, entry, name, program, weekday, coordinator):
         """Set up a new OpenSprinkler program weekday switch."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the switch name below
+        self._name = name             
         self._program = program
         self._weekday = weekday
         self._entity_type = "switch"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self):
+    #    """Return the name of the switch."""
+    #    return self._program.name + f" {self._weekday} Enabled"
+    #    
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Monday Enabled ==> OpenSprinkler FrontYard P00 Monday Enabled
     @property
     def name(self):
         """Return the name of the switch."""
-        return self._program.name + f" {self._weekday} Enabled"
+        result = self._name + " P" + str(f'{self._program.index:02}') + f" {self._weekday} Enabled"
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Switch: New Name: %s", result)
+        return result 
+        
 
     @property
     def unique_id(self) -> str:
@@ -236,15 +266,29 @@ class ProgramUseWeatherSwitch(
 ):
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program use weather switch."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the switch name below
+        self._name = name        
         self._program = program
         self._entity_type = "switch"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self):
+    #    """Return the name of the switch."""
+    #    return self._program.name + " Program Use Weather"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Program Use Weather ==> OpenSprinkler FrontYard P00 Program Use Weather
     @property
     def name(self):
         """Return the name of the switch."""
-        return self._program.name + " Program Use Weather"
-
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Program Use Weather"
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Switch: New Name: %s", result)
+        return result  
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -280,14 +324,30 @@ class StationEnabledSwitch(
 ):
     def __init__(self, entry, name, station, coordinator):
         """Set up a new OpenSprinkler station switch."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the switch name below
+        self._name = name        
         self._station = station
         self._entity_type = "switch"
         super().__init__(entry, name, coordinator)
 
+
+    
+    # <JRJ> Original Code
+    #@property
+    #def name(self):
+    #    """Return the name of the switch."""
+    #    return self._station.name + " Station Enabled"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-S00-NorthSideCedars Station Enabled ==> OpenSprinkler FrontYard S00 Station Enabled
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the switch."""
-        return self._station.name + " Station Enabled"
+        result = self._name + " S" + str(f'{self._station.index:02}') + " Station Enabled"
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Switch: New Name: %s", result)
+        return result          
 
     @property
     def unique_id(self) -> str:

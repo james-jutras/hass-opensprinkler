@@ -41,14 +41,28 @@ class ProgramNameText(OpenSprinklerProgramEntity, OpenSprinklerText, TextEntity)
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program text."""
+        # <JRJ> Grab the controller ID  e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the text name below
+        self._name = name     
         self._program = program
         self._entity_type = "text"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this sensor."""
+    #    return f"{self._program.name} Program Name"
+    
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Program Name==> OpenSprinkler FrontYard P00 Program Name    
     @property
     def name(self) -> str:
-        """Return the name of this sensor."""
-        return f"{self._program.name} Program Name"
+        """Return the name of this text."""
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Program Name"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Text: New Name: %s", result)
+        return result
 
     @property
     def unique_id(self) -> str:

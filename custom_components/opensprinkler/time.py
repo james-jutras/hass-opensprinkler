@@ -49,17 +49,32 @@ class ProgramStartTime(OpenSprinklerProgramEntity, OpenSprinklerTime, TimeEntity
 
     def __init__(self, entry, name, controller, program, start_index, coordinator):
         """Set up a new OpenSprinkler program time for program start time."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the time name below
+        self._name = name        
         self._controller = controller
         self._program = program
         self._start_index = start_index
         self._entity_type = "time"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this time."""
+    #    start = str(self._start_index) if self._start_index > 0 else ""
+    #   return f"{self._program.name} Start{start} Time"
+        
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Start00 Time==> OpenSprinkler FrontYard P00 Start00 Time  
     @property
     def name(self) -> str:
         """Return the name of this time."""
         start = str(self._start_index) if self._start_index > 0 else ""
-        return f"{self._program.name} Start{start} Time"
+        result = self._name + " P" + str(f'{self._program.index:02} Start{start}') + " Time"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Time: New Name: %s", result)
+        return result         
 
     @property
     def unique_id(self) -> str:

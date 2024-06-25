@@ -62,16 +62,30 @@ class ProgramDurationNumber(
 
     def __init__(self, entry, name, program, station, coordinator):
         """Set up a new OpenSprinkler program/station number."""
+        # <JRJ> Grab the controller ID  e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the number name below
+        self._name = name        
         self._program = program
         self._station = station
         self._entity_type = "number"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this sensor."""
+    #    return f"{self._program.name} {self._station.name} Station Duration"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Station Duration==> OpenSprinkler FrontYard P00 Station Duration
     @property
     def name(self) -> str:
-        """Return the name of this sensor."""
-        return f"{self._program.name} {self._station.name} Station Duration"
-
+        """Return the name of this sensor."""        
+        result = self._name + " P" + str(f'{self._program.index:02}') + " S" + str(f'{self._station.index:02}') + " Station Duration" 
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Number: New Name: %s", result)
+        return result    
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -124,14 +138,29 @@ class ProgramIntervalDaysNumber(
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program number for Interval Days."""
+        # <JRJ> Grab the controller ID  e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the number name below
+        self._name = name        
         self._program = program
         self._entity_type = "number"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this number."""
+    #    return f"{self._program.name} Interval Days"
+    
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Interval Days==> OpenSprinkler FrontYard P00 Interval Days
     @property
     def name(self) -> str:
         """Return the name of this number."""
-        return f"{self._program.name} Interval Days"
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Interval Days"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Number: New Name: %s", result)
+        return result  
+    
 
     @property
     def unique_id(self) -> str:
@@ -183,14 +212,28 @@ class ProgramStartingInDaysNumber(
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program number for Starting In Days."""
+        # <JRJ> Grab the controller ID   e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the number name below
+        self._name = name        
         self._program = program
         self._entity_type = "number"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this number."""
+    #    return f"{self._program.name} Starting In Days"
+        
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Starting In Days==> OpenSprinkler FrontYard P00 Starting In Days    
     @property
     def name(self) -> str:
         """Return the name of this number."""
-        return f"{self._program.name} Starting In Days"
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Starting In Days"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Number: New Name: %s", result)
+        return result          
 
     @property
     def unique_id(self) -> str:
@@ -242,17 +285,32 @@ class ProgramStartTimeOffsetNumber(
 
     def __init__(self, entry, name, program, start_index, coordinator):
         """Set up a new OpenSprinkler program number for Start Time Offset."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the number name below
+        self._name = name         
         self._program = program
         self._start_index = start_index
         self._entity_type = "number"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this number."""
+    #    start = str(self._start_index) if self._start_index > 0 else ""
+    #    return f"{self._program.name} Start{start} Time Offset"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Start1 Time Offset==> OpenSprinkler FrontYard P00 Start1 Time Offset  
     @property
     def name(self) -> str:
         """Return the name of this number."""
         start = str(self._start_index) if self._start_index > 0 else ""
-        return f"{self._program.name} Start{start} Time Offset"
-
+        result = self._name + " P" + str(f'{self._program.index:02} Start{start}') + " Time Offset"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Number: New Name: %s", result)
+        return result 
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -327,15 +385,29 @@ class ProgramStartTimeRepeatCountNumber(
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program number for Start Time Repeat Count."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the number name below
+        self._name = name        
         self._program = program
         self._entity_type = "number"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this number."""
+    #    return f"{self._program.name} Start Time Repeat Count"
+
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Start Time Repeat Count==> OpenSprinkler FrontYard P00 Start Time Repeat Count    
     @property
     def name(self) -> str:
         """Return the name of this number."""
-        return f"{self._program.name} Start Time Repeat Count"
-
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Start Time Repeat Count"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Number: New Name: %s", result)
+        return result 
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
@@ -386,15 +458,29 @@ class ProgramStartTimeRepeatIntervalNumber(
 
     def __init__(self, entry, name, program, coordinator):
         """Set up a new OpenSprinkler program number for Start Time Repeat Interval."""
+        # <JRJ> Grab the controller ID e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the number name below
+        self._name = name           
         self._program = program
         self._entity_type = "number"
         super().__init__(entry, name, coordinator)
 
+    # <JRJ> Original Code
+    #@property
+    #def name(self) -> str:
+    #    """Return the name of this number."""
+    #   return f"{self._program.name} Start Time Repeat Interval"
+    
+    # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Start Time Repeat Interval==> OpenSprinkler FrontYard P00 Start Time Repeat Interval    
     @property
     def name(self) -> str:
         """Return the name of this number."""
-        return f"{self._program.name} Start Time Repeat Interval"
-
+        result = self._name + " P" + str(f'{self._program.index:02}') + " Start Time Repeat Interval"         
+        #To enable logging:
+        #   Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #   Add=> custom_components.pyopensprinkler: debug to configuration.yaml 
+        #_LOGGER.debug("Number: New Name: %s", result)
+        return result
+        
     @property
     def unique_id(self) -> str:
         """Return a unique, Home Assistant friendly identifier for this entity."""
