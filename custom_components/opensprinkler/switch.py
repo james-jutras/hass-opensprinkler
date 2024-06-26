@@ -154,7 +154,7 @@ class ProgramEnabledSwitch(
 
     # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Program Enabled ==> OpenSprinkler FrontYard P00 Program Enabled
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the switch."""
         result = self._name + " P" + str(f'{self._program.index:02}') + " Program Enabled"
         #To enable logging:
@@ -219,7 +219,7 @@ class ProgramWeekdaySwitch(
 
     # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Monday Enabled ==> OpenSprinkler FrontYard P00 Monday Enabled
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the switch."""
         result = self._name + " P" + str(f'{self._program.index:02}') + f" {self._weekday} Enabled"
         #To enable logging:
@@ -280,7 +280,7 @@ class ProgramUseWeatherSwitch(
 
     # <JRJ> Modified 2024-03-02: Name with controller ID e.g. FY-P00-MWFS-S00toS06-1AM Program Use Weather ==> OpenSprinkler FrontYard P00 Program Use Weather
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the switch."""
         result = self._name + " P" + str(f'{self._program.index:02}') + " Program Use Weather"
         #To enable logging:
