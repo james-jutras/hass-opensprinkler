@@ -1,4 +1,5 @@
 """OpenSprinkler integration."""
+
 import asyncio
 import logging
 from datetime import timedelta
@@ -7,18 +8,22 @@ import async_timeout
 from aiohttp.client_exceptions import InvalidURL
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    CONF_NAME,
     CONF_PASSWORD,
     CONF_SCAN_INTERVAL,
     CONF_URL,
     CONF_VERIFY_SSL,
 )
 from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity_platform import async_get_platforms
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import (
+    ConfigEntryAuthFailed,
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 from homeassistant.util import slugify
 from homeassistant.util.dt import utc_from_timestamp
 from pyopensprinkler import Controller as OpenSprinkler
@@ -27,6 +32,7 @@ from pyopensprinkler import OpenSprinklerAuthError, OpenSprinklerConnectionError
 from .const import (
     CONF_INDEX,
     CONF_RUN_SECONDS,
+    DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     SCHEMA_SERVICE_PAUSE_STATIONS,
@@ -64,60 +70,52 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     url = entry.data.get(CONF_URL)
     password = entry.data.get(CONF_PASSWORD)
     verify_ssl = entry.data.get(CONF_VERIFY_SSL)
-    try:
-        opts = {"session": async_get_clientsession(hass), "verify_ssl": verify_ssl}
-        controller = OpenSprinkler(url, password, opts)
-        controller.refresh_on_update = False
+    opts = {"session": async_get_clientsession(hass), "verify_ssl": verify_ssl}
 
-        async def async_update_data():
-            """Fetch data from OpenSprinkler."""
-            #Add=> custom_components.opensprinkler: debug to configuration.yaml
-            #Add=> custom_components.pyopensprinkler: debug to configuration.yaml
-            # _LOGGER.debug("refreshing data")
-            async with async_timeout.timeout(TIMEOUT):
-                try:
-                    await controller.refresh()
-                except (
-                    InvalidURL,
-                    OpenSprinklerConnectionError,
-                    OpenSprinklerAuthError,
-                ) as e:
-                    _LOGGER.error(e)
-                except Exception as e:
-                    _LOGGER.exception(e)
+    controller = OpenSprinkler(url, password, opts)
+    controller.refresh_on_update = False
 
-                if not controller._state:
-                    raise UpdateFailed("Error fetching OpenSprinkler state")
+    async def async_update_data():
+        """Fetch data from OpenSprinkler."""
+        #Add=> custom_components.opensprinkler: debug to configuration.yaml
+        #Add=> custom_components.pyopensprinkler: debug to configuration.yaml
+        # _LOGGER.debug("refreshing data")
+        async with async_timeout.timeout(TIMEOUT):
+            try:
+                await controller.refresh()
+            except OpenSprinklerAuthError as e:
+                # wrong password, tell user to re-enter the password
+                _LOGGER.debug(f"auth failure: {e}")
+                raise ConfigEntryAuthFailed from e
+            except (
+                InvalidURL,
+                OpenSprinklerConnectionError,
+            ) as e:
+                raise UpdateFailed from e
 
-                return controller._state
+            if not controller._state:
+                raise UpdateFailed("Error fetching OpenSprinkler state")
 
-        scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-        coordinator = DataUpdateCoordinator(
-            hass,
-            _LOGGER,
-            name="OpenSprinkler resource status",
-            update_method=async_update_data,
-            update_interval=timedelta(seconds=scan_interval),
-        )
+            return controller._state
 
-        # initial load before loading platforms
-        await coordinator.async_refresh()
-        if not coordinator.last_update_success:
-            raise ConfigEntryNotReady
+    scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name=f"{entry.data.get(CONF_NAME, DEFAULT_NAME)} resource status",
+        update_method=async_update_data,
+        update_interval=timedelta(seconds=scan_interval),
+    )
 
-        hass.data[DOMAIN][entry.entry_id] = {
-            "coordinator": coordinator,
-            "controller": controller,
-        }
+    # initial load before loading platforms
+    await coordinator.async_config_entry_first_refresh()
 
-    except (OpenSprinklerAuthError, OpenSprinklerConnectionError) as exc:
-        _LOGGER.error("Unable to connect to OpenSprinkler controller: %s", str(exc))
-        raise ConfigEntryNotReady
+    hass.data[DOMAIN][entry.entry_id] = {
+        "coordinator": coordinator,
+        "controller": controller,
+    }
 
-    for component in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Setup services
     async def _async_send_run_command(call: ServiceCall):
@@ -339,9 +337,9 @@ class OpenSprinklerControllerEntity:
         if not isinstance(run_seconds[0], int):
             run_seconds_by_index = {}
             for run_seconds_config in run_seconds:
-                run_seconds_by_index[
-                    run_seconds_config[CONF_INDEX]
-                ] = run_seconds_config[CONF_RUN_SECONDS]
+                run_seconds_by_index[run_seconds_config[CONF_INDEX]] = (
+                    run_seconds_config[CONF_RUN_SECONDS]
+                )
 
             run_seconds_list = []
             for _, station in self._controller.stations.items():
