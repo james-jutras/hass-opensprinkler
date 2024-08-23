@@ -173,7 +173,7 @@ class LastRunSensor(OpenSprinklerControllerEntity, OpenSprinklerSensor, Entity):
 
     def __init__(self, entry, name, controller, coordinator):
         """Set up a new opensprinkler last run sensor."""
-        # <JRJ> Code fix
+        # <JRJ> Grab the controller ID  e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the select name below
         self._name = name        
         self._controller = controller
         self._entity_type = "sensor"
@@ -426,7 +426,7 @@ class ControllerCurrentTimeSensor(
 
     def __init__(self, entry, name, controller, coordinator):
         """Set up a new opensprinkler controller current time sensor."""
-        # <JRJ> Code fix
+        # <JRJ> Grab the controller ID  e.g. "OpenSprinkler HA-RPI4B" or "OpenSprinkler FrontYard" to be used to generate the select name below
         self._name = name
         self._controller = controller
         self._entity_type = "sensor"

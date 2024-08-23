@@ -70,7 +70,7 @@ class ControllerOperationSwitch(
         super().__init__(entry, name, coordinator)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of controller switch."""
         return f"{self._name} Enabled"
 
